@@ -1,6 +1,7 @@
 provider "aws" {
-  region = "ap-south-1"
+  region = "eu-north-1"
 }
+
 
 resource "aws_vpc" "devopsshack_vpc" {
   cidr_block = "10.0.0.0/16"
@@ -9,6 +10,7 @@ resource "aws_vpc" "devopsshack_vpc" {
     Name = "devopsshack-vpc"
   }
 }
+
 
 resource "aws_subnet" "devopsshack_subnet" {
   count = 2
@@ -22,6 +24,7 @@ resource "aws_subnet" "devopsshack_subnet" {
   }
 }
 
+
 resource "aws_internet_gateway" "devopsshack_igw" {
   vpc_id = aws_vpc.devopsshack_vpc.id
 
@@ -29,6 +32,7 @@ resource "aws_internet_gateway" "devopsshack_igw" {
     Name = "devopsshack-igw"
   }
 }
+
 
 resource "aws_route_table" "devopsshack_route_table" {
   vpc_id = aws_vpc.devopsshack_vpc.id
@@ -49,6 +53,7 @@ resource "aws_route_table_association" "a" {
   route_table_id = aws_route_table.devopsshack_route_table.id
 }
 
+
 resource "aws_security_group" "devopsshack_cluster_sg" {
   vpc_id = aws_vpc.devopsshack_vpc.id
 
@@ -63,6 +68,7 @@ resource "aws_security_group" "devopsshack_cluster_sg" {
     Name = "devopsshack-cluster-sg"
   }
 }
+
 
 resource "aws_security_group" "devopsshack_node_sg" {
   vpc_id = aws_vpc.devopsshack_vpc.id
@@ -86,6 +92,7 @@ resource "aws_security_group" "devopsshack_node_sg" {
   }
 }
 
+
 resource "aws_eks_cluster" "devopsshack" {
   name     = "devopsshack-cluster"
   role_arn = aws_iam_role.devopsshack_cluster_role.arn
@@ -95,6 +102,7 @@ resource "aws_eks_cluster" "devopsshack" {
     security_group_ids = [aws_security_group.devopsshack_cluster_sg.id]
   }
 }
+
 
 resource "aws_eks_node_group" "devopsshack" {
   cluster_name    = aws_eks_cluster.devopsshack.name
@@ -108,13 +116,14 @@ resource "aws_eks_node_group" "devopsshack" {
     min_size     = 3
   }
 
-  instance_types = ["t2.large"]
+  instance_types = ["t3.micro"]
 
   remote_access {
     ec2_ssh_key = var.ssh_key_name
     source_security_group_ids = [aws_security_group.devopsshack_node_sg.id]
   }
 }
+
 
 resource "aws_iam_role" "devopsshack_cluster_role" {
   name = "devopsshack-cluster-role"
@@ -135,10 +144,12 @@ resource "aws_iam_role" "devopsshack_cluster_role" {
 EOF
 }
 
+
 resource "aws_iam_role_policy_attachment" "devopsshack_cluster_role_policy" {
   role       = aws_iam_role.devopsshack_cluster_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
+
 
 resource "aws_iam_role" "devopsshack_node_group_role" {
   name = "devopsshack-node-group-role"
@@ -158,6 +169,7 @@ resource "aws_iam_role" "devopsshack_node_group_role" {
 }
 EOF
 }
+
 
 resource "aws_iam_role_policy_attachment" "devopsshack_node_group_role_policy" {
   role       = aws_iam_role.devopsshack_node_group_role.name
